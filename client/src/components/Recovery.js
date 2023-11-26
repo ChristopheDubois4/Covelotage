@@ -20,15 +20,11 @@ export default function Recovery() {
   useEffect(() => {
     // Skip the initial render
     if (!isMounted.current) {
-      console.log("B")
-
       generateOTP(username).then((status) => {
-        console.log(status);
         if (status === 200) return toast.success('OTP has been sent to your email!');
         return toast.error('Problem while generating OTP!');
       }).catch(error => { console.log(error)});
     } else {
-      console.log("A")
       // Set isMounted to false after the initial render
       isMounted.current = false;
     }
