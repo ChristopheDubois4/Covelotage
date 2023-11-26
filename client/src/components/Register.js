@@ -37,10 +37,7 @@ export default function Register() {
       registerPromise.then(function() {
         navigate('/login')
       }).catch(err => { 
-        console.log("_________ CATCH  ___________")
-
-        console.log("err : ",err)
-
+        
         if (err.error === "AlreadyExisting") {
           console.log("err.msg : ",err.msg)
           toast.error(err.msg);
