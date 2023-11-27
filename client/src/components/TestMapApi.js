@@ -1,6 +1,6 @@
 import React, { useState, useRef} from 'react';
 import { useFormik } from 'formik';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { getShortestPath } from '../helper/helper'
 import { pointsValidate } from '../helper/validate'
 
@@ -51,6 +51,9 @@ export default function TestMapApi() {
 
   return (
     <div>
+        
+    <Toaster position='top-center' reverseOrder={false}></Toaster>
+
       <form onSubmit={formik.handleSubmit}>
         <div>
             <label>
