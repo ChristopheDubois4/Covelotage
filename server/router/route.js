@@ -2,9 +2,13 @@ import { Router } from "express";
 
 const router = Router();
 
+/**
+ *  FRONTEND - BACKEND
+ */
 
 /** import all controllers */
 import * as controller from '../controllers/appController.js'
+import * as mapController from '../controllers/mapApiController.js'
 import Auth, {localVariables} from '../middleware/auth.js';
 import {registerMail} from '../controllers/mailer.js'
 
@@ -22,7 +26,15 @@ router.route('/createResetSession').get(controller.createResetSession); // reset
 
 /** PUT Methods */
 router.route('/updateUser').put(Auth, controller.updateUser); // update the user profile
-router.route('/resetPassword').put(controller.verifyUser, controller.resetPassword); // us eto reset password
+router.route('/resetPassword').put(controller.verifyUser, controller.resetPassword); //  reset the password
+
+
+/**
+ *  BACKEND - MAP API PYTHON
+ */
+
+/** test the python API */
+router.route('/shortestPath').post(mapController.shortestPath)
 
 
 export default router;

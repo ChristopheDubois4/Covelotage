@@ -9,6 +9,7 @@ import Register from './components/Register';
 import Profile from './components/Profile';
 import Recovery from './components/Recovery';
 import Reset from './components/Reset';
+import TestMapApi from './components/TestMapApi';
 import PageNotFound from './components/PageNotFound';
 
 
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
   {
     path : '/Reset',
     element : <Reset/>
+  },
+  {
+    path : '/TestMapAPi',
+    element : <TestMapApi/>
   },
   {
     path : '/PageNotFound',

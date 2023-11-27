@@ -5,6 +5,10 @@ axios.defaults.baseURL = process.env.REACT_APP_SERVER_DOMAIN;
 
 /** Make API Requests */
 
+/** 
+ * Manage user 
+ */
+
 /** To get username from Token */
 export async function getUsername(){
     const token = localStorage.getItem('token')
@@ -119,5 +123,23 @@ export async function resetPassword({ username, password }){
         return Promise.resolve({ data, status})
     } catch (error) {
         return Promise.reject({ error })
+    }
+}
+
+
+/** 
+ * Manage map 
+ */
+
+/** get the shortest path between 2 points */
+export async function getShortestPath(userPoints) {
+    try {
+        console.log("\nPoints sent to server : ", userPoints)
+
+        const { data : { points }} =  await axios.post(`/api/shortestPath`, { points : userPoints })
+
+        return Promise.resolve(points);
+    } catch (error) {
+        return Promise.reject({ error : "Servor error : distance could not be calculated"});
     }
 }
