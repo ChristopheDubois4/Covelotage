@@ -4,6 +4,9 @@ import numpy as np
 from pydantic import BaseModel, validator
 from typing import List
 
+# show messages in console
+from fastapi.logger import logger
+
 app = FastAPI()
 
 class Points(BaseModel):
@@ -28,15 +31,18 @@ class Points(BaseModel):
         """
         try:
             # Convert the string coordinates to lists of integers
-            return [list(map(int, point.strip('[]').split(','))) for point in value]
+            return [list(map(float, point.strip('[]').split(','))) for point in value]
         except Exception as e:
             raise ValueError(f"Invalid point format: {e}")
 
 
 @jit(nopython=True)
 def test(points):
-    new_point = np.array([[42, 666]])
-    pts = np.append(points, new_point, axis = 0)
+    m_x = (points[0,0] + points[1,0])/2
+    m_y = (points[0,1] + points[1,1])/2 + 0.001
+    new_point = np.array([[m_x, m_y]])
+    pts = np.append(points, np.array([[points[1,0], points[1,1]]]), axis = 0)
+    pts[1] = new_point
     return pts
 
 

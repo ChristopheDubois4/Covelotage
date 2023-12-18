@@ -12,6 +12,7 @@ axios.defaults.baseURL = ENV.MAP_API_URI;
 export async function shortestPath(req, res) {
 
     try {
+        console.log("req points : ",req.body.points)
         const { data } = await axios.post('/shortestPath', req.body);
         console.log("response : ",data)
         return res.status(201).send(data)

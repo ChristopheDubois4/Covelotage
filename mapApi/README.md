@@ -33,5 +33,8 @@ pip install numpy
 uvicorn api:app --port 7777 --reload
 ```
 
+## [Supported Numpy features](https://numba.pydata.org/numba-doc/dev/reference/numpysupported.html)
+
+
 
 
