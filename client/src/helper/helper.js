@@ -127,6 +127,16 @@ export async function resetPassword({ username, password }){
 }
 
 
+
+
+
+
+
+
+
+
+// OLD
+
 /** 
  * Manage map 
  */
@@ -137,6 +147,14 @@ export async function getShortestPath(userPoints) {
         console.log("\nPoints sent to server : ", userPoints)
 
         const { data : { points }} =  await axios.post(`/api/shortestPath`, { points : userPoints })
+
+        console.log("points : ")
+        console.log(points)
+
+        
+
+        // console.log("allPoints ::: ");
+        // console.log(allPoints);
 
         return Promise.resolve(points);
     } catch (error) {

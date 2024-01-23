@@ -12,8 +12,6 @@ import Reset from './components/Reset';
 import TestMapApi from './components/TestMapApi';
 import PageNotFound from './components/PageNotFound';
 
-import TestMapApiOld from './components/TestMapApiOld';
-
 
 /** auth middleware */
 import { AuthorizeUser, ProtectRoute } from './middleware/auth';
@@ -51,10 +49,6 @@ const router = createBrowserRouter([
   {
     path : '/TestMapAPi',
     element : <TestMapApi/>
-  },
-  {
-    path : '/TestMapAPiOld',
-    element : <TestMapApiOld/>
   },
   {
     path : '/PageNotFound',

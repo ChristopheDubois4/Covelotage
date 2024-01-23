@@ -1,11 +1,9 @@
 from fastapi import FastAPI, HTTPException
-from numba import jit
 import numpy as np
 from pydantic import BaseModel, validator
 from typing import List
 
-# show messages in console
-from fastapi.logger import logger
+import openrouteservice as ors 
 
 app = FastAPI()
 
@@ -36,28 +34,27 @@ class Points(BaseModel):
             raise ValueError(f"Invalid point format: {e}")
 
 
-@jit(nopython=True)
-def test(points):
-    m_x = (points[0,0] + points[1,0])/2
-    m_y = (points[0,1] + points[1,1])/2 + 0.001
-    new_point = np.array([[m_x, m_y]])
-    pts = np.append(points, np.array([[points[1,0], points[1,1]]]), axis = 0)
-    pts[1] = new_point
-    return pts
-
-
 @app.post('/shortestPath')
 async def calculate_shortest_path(request : Points) -> dict[str, list[str]]:
     try:
-        # Convert the list into a numpy array to process faster
-        points_np = np.array(request.points)
+               
+        coords = request.points
         
-        # PROCESS THE DATAS
-        # Exemple
-        points = test(points_np)   
-             
+        API=open("OpenRouteService.txt","r")
+        APIKey=API.read()
+        client=ors.Client(key=APIKey)
+        route={}
+        
+        route = client.directions(
+            coordinates=coords,
+            profile='cycling-regular',
+            format='geojson'
+        )
+        
+        route_coordinates = route['features'][0]['geometry']['coordinates']
+    
         # Convert a numpy array into the format dict[str, list[str]]
-        points_as_str = [f"[{x},{y}]" for x, y in points]
+        points_as_str = [f"[{lat},{lng}]" for lat, lng in route_coordinates]
         return {"points" : points_as_str }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

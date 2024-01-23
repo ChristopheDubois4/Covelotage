@@ -23,3 +23,9 @@ Lancement
 ```
 npm start
 ```
+
+## mapApi
+
+```
+uvicorn api:app --port 7777 --reload
+```
