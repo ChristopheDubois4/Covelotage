@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { getUsername } from '../helper/helper'
+import { getUsername } from '../helper/userHelper'
 
 axios.defaults.baseURL = process.env.REACT_APP_SERVER_DOMAIN;
 

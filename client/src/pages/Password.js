@@ -6,7 +6,7 @@ import {useFormik} from 'formik'
 import { passwordValidate } from '../helper/validate'
 import useFetch from '../hooks/fetch.hook'
 import { useAuthStore } from '../store/store'
-import { verifyPassword } from '../helper/helper'
+import { verifyPassword } from '../helper/userHelper'
 
 export default function Password() {
 
@@ -33,7 +33,7 @@ export default function Password() {
       loginPromise.then(res => {
         let { token } = res.data;
         localStorage.setItem('token', token);
-        navigate('/profile');
+        navigate('/map');
       }).catch(error => { });
     }
   });

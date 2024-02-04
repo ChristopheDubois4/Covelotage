@@ -3,6 +3,6 @@ export default {
     // testing email and password
     EMAIL : "marguerite87@ethereal.email",
     PASSWORD : "xuDZe38Qxp3geJMXCK",
-    MONGODB_URI : "mongodb://localhost:27017",
+    MONGODB_URI : "mongodb://localhost:27017/covelotage",
     MAP_API_URI : "http://localhost:7777"
 }

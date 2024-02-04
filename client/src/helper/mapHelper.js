@@ -2,6 +2,8 @@ import axios from 'axios';
 // library tfo advanced geospatial analysis 
 import * as turf from '@turf/turf';
 
+axios.defaults.baseURL = process.env.REACT_APP_SERVER_DOMAIN;
+
 /** 
  * Manage map 
  */
@@ -9,7 +11,6 @@ import * as turf from '@turf/turf';
 /** get the shortest path between 2 points */
 export async function getShortestPath(userPoints) {
     try {
-
         // formate the points
         const formatedPoints = userPoints.map(point => JSON.stringify([point.lng, point.lat]));
         // send the points to the server

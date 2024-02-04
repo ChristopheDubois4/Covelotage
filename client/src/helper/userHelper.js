@@ -125,39 +125,3 @@ export async function resetPassword({ username, password }){
         return Promise.reject({ error })
     }
 }
-
-
-
-
-
-
-
-
-
-
-// OLD
-
-/** 
- * Manage map 
- */
-
-/** get the shortest path between 2 points */
-export async function getShortestPath(userPoints) {
-    try {
-        console.log("\nPoints sent to server : ", userPoints)
-
-        const { data : { points }} =  await axios.post(`/api/shortestPath`, { points : userPoints })
-
-        console.log("points : ")
-        console.log(points)
-
-        
-
-        // console.log("allPoints ::: ");
-        // console.log(allPoints);
-
-        return Promise.resolve(points);
-    } catch (error) {
-        return Promise.reject({ error : "Servor error : distance could not be calculated"});
-    }
-}

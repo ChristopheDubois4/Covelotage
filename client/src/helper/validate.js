@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import { authenticate } from "./helper";
+import { authenticate } from "./userHelper";
 
 /** validate login page username */
 export async function usernameValidate(values) {
@@ -43,14 +43,6 @@ export async function registerValidate(values) {
 export async function profileValidate(values) {
 
     const errors = emailVerify({}, values);
-    return errors;
-}
-
-
-/** validate TestMapApi page*/
-export async function pointsValidate(values) {
-
-    const errors = pointsVerify({}, values);
     return errors;
 }
 
@@ -112,18 +104,6 @@ function emailVerify(errors = {}, values) {
     }
     else if(!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
         errors.email = toast.error('Invalide email adress...!');
-    }
-    return errors;
-}
-
-
-/** Verify points */
-function pointsVerify(errors = {}, values) {
-    
-    const {startingPoint, arrivalPoint} = values;
-
-    if (!startingPoint || !arrivalPoint) {
-        errors.points =  toast.error('At least one point is not set...!');
     }
     return errors;
 }

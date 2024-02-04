@@ -1,8 +1,14 @@
 import React, { useState, useRef, useEffect} from 'react';
+import { Link } from 'react-router-dom'
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getShortestPath, updateIndex } from '../helper/mapHelper'
-import { pointsValidate } from '../helper/validate'
+import { addRouteToServer } from '../helper/routeHelper';
+
+/** Components */
+import { LogoutButton } from '../components/LogoutButton'
+import { RouteInteraction } from '../components/RouteInteraction';
+import { CreateRouteForm } from '../components/CreateRouteForm';
 
 /** Display OpenSteetMap with leaflet module */
 import { MapContainer, TileLayer, useMapEvents, Marker, Popup, Polyline} from 'react-leaflet';
@@ -26,7 +32,8 @@ import { Toast } from 'bootstrap';
  * OK - ajouter le déplacement / sauvegarde des points intermédiares
  * 
  * - ? Localisation / coordonnées manuelles ?
- * - ajouter la partie utilisateur
+ * - ? Changer la couleur des points déplacés
+ * OK - ajouter la partie utilisateur
  * - sauvegarde dans la base de donnée (utiliser un form avec formik ?)
  */
 
@@ -45,16 +52,16 @@ export default function TestMapApi() {
   // starting point and arrival point
   const [startPoint, setStartPoint] = useState(null);
   const [endPoint, setEndPoint] = useState(null);
+  // points manually modified by the user
+  const [intermediatePoints, setIntermediatePoints] = useState([]);
 
   // received points from the server
   const [receivedPoints, setReceivedPoints] = useState([]);
 
-  // points manually modified by the user
-  const [intermediatePoints, setIntermediatePoints] = useState([]);
-
   // Path color
   const blueOptions = { fillColor: 'blue' }
 
+  
   /** Updates the path */
   const handlePathSubmit = async (values) => {
 
@@ -154,39 +161,85 @@ export default function TestMapApi() {
     handleMapClick(e, isStart);
   }
 
+  /** ----------------------- EN COURS ----------------------- */
+
+  // Fonction pour gérer la soumission du formulaire
+  const handleRouteFormSubmit = (formData) => {
+
+    // verify the existence of the route
+    if (!receivedPoints || receivedPoints.length === 0) {
+      toast.error('Veuillez créer un chemin');
+      return;
+    }
+
+    // transform the points to a JSON format
+    const transformedPoints = receivedPoints.map(point => {
+      const [lng, lat] = point;
+      return JSON.stringify([lat, lng]);
+    });
+
+    // Add the path to the form data
+    formData.route = transformedPoints;
+    // Add the route to the server
+    const addRoutePromise = addRouteToServer(formData);
+
+    toast.promise(addRoutePromise, {
+      loading: 'Adding route...',
+      success: <b>Route added</b>,
+      error: (err) => <b>{err.response.data.error}</b>,
+    });
+
+    addRoutePromise.then(() => {
+      // ------------- AF -------------
+      // update the list of routes
+    }).catch((error) => {"fail to update the list of routes"});
+  };
+
+   /** ----------------------- AF ----------------------- */
+    // AF 
+    const handleSelectedChemin = (chemin) => {
+      // Gérer le chemin sélectionné (par exemple, mettre à jour les points sur la carte)
+      console.log('Chemin sélectionné :', chemin);
+    };
+
   return (
     <div>
         
     <Toaster position='top-center' reverseOrder={false}></Toaster>
 
+      {/** Display the form above the map */}
+      <div style={{ position: 'relative', zIndex : 1001 }}>
+        {/* Formulaire pour le nom du chemin et la planification */}
+        <CreateRouteForm onSubmit={handleRouteFormSubmit} />
+      </div>
 
-        {/** start point selection button */}
-        <div>
-            <label>
-                <input
-                    type="checkbox"
-                    name="startingPointCheckbox"
-                    checked={isStartPointSelected}
-                    onChange={() => {
-                      setIsStartPointSelected(!isStartPointSelected)}
-                    }
-                />
-                Point de départ
-            </label>
-        </div>
-        
-        {/** arrival point selection button */}
-        <div>
+      {/** start point selection button */}
+      <div>
           <label>
-            <input
-                type="checkbox"
-                name="arrivalPointCheckbox"
-                checked={!isStartPointSelected}
-                onChange={() => setIsStartPointSelected(!isStartPointSelected)}
-            />
-            Point d'arrivée
+              <input
+                  type="checkbox"
+                  name="startingPointCheckbox"
+                  checked={isStartPointSelected}
+                  onChange={() => {
+                    setIsStartPointSelected(!isStartPointSelected)}
+                  }
+              />
+              Point de départ
           </label>
-        </div>
+      </div>
+      
+      {/** arrival point selection button */}
+      <div>
+        <label>
+          <input
+              type="checkbox"
+              name="arrivalPointCheckbox"
+              checked={!isStartPointSelected}
+              onChange={() => setIsStartPointSelected(!isStartPointSelected)}
+          />
+          Point d'arrivée
+        </label>
+      </div>
 
 
       <MapContainer
@@ -293,6 +346,12 @@ export default function TestMapApi() {
 
         <MapClickHandler />
       </MapContainer>
+
+      <RouteInteraction onSelectChemin={handleSelectedChemin} />
+
+
+      <LogoutButton />
+      <Link to="/profile"><button>Profile</button></Link>
       
     </div>
   );

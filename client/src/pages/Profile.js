@@ -6,7 +6,8 @@ import { useFormik } from 'formik';
 import { profileValidate } from '../helper/validate';
 import convertToBase64 from '../helper/convert';
 import useFetch from '../hooks/fetch.hook'
-import { updateUser } from '../helper/helper';
+import { updateUser } from '../helper/userHelper';
+import { LogoutButton } from '../components/LogoutButton'
 
 export default function Profile() {
 
@@ -49,12 +50,6 @@ export default function Profile() {
     setFile(base64);
   }
 
-  // logout handler function
-  function userLogout(){
-    localStorage.removeItem('token');
-    navigate('/')
-  }
-
   if (isLoading) {
     return <h1>isLoading</h1>
   };
@@ -66,6 +61,8 @@ export default function Profile() {
     <div className="">
 
       <Toaster position='top-center' reverseOrder={false}></Toaster>
+
+      <span> Return to the  <Link to="/map"><button>map</button></Link> </span>
 
       <div className=''>
         <div className="" style={{ width: "45%", paddingTop: '3em'}}>
@@ -105,7 +102,7 @@ export default function Profile() {
               </div>
 
               <div className="">
-                <span className=''>come back later? <button onClick={userLogout} className=''>Logout</button></span>
+                <span className=''>come back later? <LogoutButton /> </span>
               </div>
 
           </form>

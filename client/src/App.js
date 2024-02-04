@@ -3,14 +3,15 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 
 
 /** import all components */
-import Username from './components/Username';
-import Password from './components/Password';
-import Register from './components/Register';
-import Profile from './components/Profile';
-import Recovery from './components/Recovery';
-import Reset from './components/Reset';
-import TestMapApi from './components/TestMapApi';
-import PageNotFound from './components/PageNotFound';
+import Username from './pages/Username';
+import Password from './pages/Password';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Recovery from './pages/Recovery';
+import Reset from './pages/Reset';
+import Map from './pages/Map';
+import PageNotFound from './pages/PageNotFound';
+import Home from './pages/Home';
 
 
 /** auth middleware */
@@ -20,7 +21,7 @@ import { AuthorizeUser, ProtectRoute } from './middleware/auth';
 const router = createBrowserRouter([
   {
     path : '/',
-    element : <h1>ACCEUIL</h1>
+    element : <Home/>
   },
   {
     path : '/login',
@@ -47,8 +48,8 @@ const router = createBrowserRouter([
     element : <Reset/>
   },
   {
-    path : '/TestMapAPi',
-    element : <TestMapApi/>
+    path : '/map',
+    element : <AuthorizeUser> <Map/> </AuthorizeUser>
   },
   {
     path : '/PageNotFound',
