@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getShortestPath, updateIndex } from '../helper/mapHelper'
-import { addRouteToServer } from '../helper/routeHelper';
+import { addRouteToServer, updateRoute, deleteRoute } from '../helper/routeHelper';
 
 /** Components */
 import { LogoutButton } from '../components/LogoutButton'
-import { RouteInteraction } from '../components/RouteInteraction';
 import { CreateRouteForm } from '../components/CreateRouteForm';
+import ListRouteForm from '../components/ListRouteForm';
 
 /** Display OpenSteetMap with leaflet module */
 import { MapContainer, TileLayer, useMapEvents, Marker, Popup, Polyline} from 'react-leaflet';
@@ -33,6 +33,7 @@ import { Toast } from 'bootstrap';
  * 
  * - ? Localisation / coordonnées manuelles ?
  * - ? Changer la couleur des points déplacés
+ * - AJouter les routes de correspondance (autre couleur + partie commune en pointillé)
  * OK - ajouter la partie utilisateur
  * - sauvegarde dans la base de donnée (utiliser un form avec formik ?)
  */
@@ -57,6 +58,15 @@ export default function TestMapApi() {
 
   // received points from the server
   const [receivedPoints, setReceivedPoints] = useState([]);
+
+  // is a route is selected in the list of my routes
+  const isRouteSelected = useRef(false);
+  // route selected in the list of my routes
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  // enables updating the displayed information when the same route is re-selected.
+  const [selectionUpdate, setSelectionUpdate] = useState(false);
+  // refresh the list of routes
+  const [refresh, setRefresh] = useState(false);
 
   // Path color
   const blueOptions = { fillColor: 'blue' }
@@ -95,6 +105,8 @@ export default function TestMapApi() {
 
    /** Updates the path when modifying points of the path */
   useEffect(() => {
+    // not calculate the path if a route is selected
+    if (isRouteSelected.current === true) return;
     // allow to avoid the first call of the function
     if (firstSelection.current) return;
     // if the update of the path is not allowed, return
@@ -163,13 +175,13 @@ export default function TestMapApi() {
 
   /** ----------------------- EN COURS ----------------------- */
 
-  // Fonction pour gérer la soumission du formulaire
-  const handleRouteFormSubmit = (formData) => {
+  // Format the route for the server
+  function formatRoute(formData) {
 
     // verify the existence of the route
     if (!receivedPoints || receivedPoints.length === 0) {
       toast.error('Veuillez créer un chemin');
-      return;
+      return null;
     }
 
     // transform the points to a JSON format
@@ -180,8 +192,33 @@ export default function TestMapApi() {
 
     // Add the path to the form data
     formData.route = transformedPoints;
-    // Add the route to the server
-    const addRoutePromise = addRouteToServer(formData);
+    return formData;
+  };
+
+  // Handle the deletion of a route
+  const handleDeleteRoute = (routeName) => {
+    // delete the route from the server
+    const deleteRoutePromise = deleteRoute(routeName);
+
+    toast.promise(deleteRoutePromise, {
+      loading: 'Deleting route...',
+      success: <b>Route deleted</b>,
+      error: <b>Fail to delete the route</b>,
+    });
+
+    deleteRoutePromise.then(() => {
+      // update the list of routes
+      setRefresh(!refresh);
+    }).catch((error) => {"fail to update the list of routes"});
+  }
+
+  // Handle the creation of a route
+  const handleCreateRoute = (formData) => {
+    // format the data for the server
+    const data = formatRoute(formData);
+    if (!data) return;
+    // add the route to the server
+    const addRoutePromise = addRouteToServer(data);
 
     toast.promise(addRoutePromise, {
       loading: 'Adding route...',
@@ -190,17 +227,56 @@ export default function TestMapApi() {
     });
 
     addRoutePromise.then(() => {
-      // ------------- AF -------------
       // update the list of routes
+      setRefresh(!refresh);
     }).catch((error) => {"fail to update the list of routes"});
   };
 
-   /** ----------------------- AF ----------------------- */
-    // AF 
-    const handleSelectedChemin = (chemin) => {
-      // Gérer le chemin sélectionné (par exemple, mettre à jour les points sur la carte)
-      console.log('Chemin sélectionné :', chemin);
-    };
+  // Handle the update of a route
+  const handleUpdateRoute = (formData) => {
+    // format the data for the server
+    const data = formatRoute(formData);
+    // add the route to the server
+    const updateRoutePromise = updateRoute(data);
+
+    toast.promise(updateRoutePromise, {
+      loading: 'Updating route...',
+      success: <b>Route updated</b>,
+      error: (err) => <b>{err.response.data.error}</b>,
+    });
+
+    updateRoutePromise.then(() => {
+      // update the list of routes
+      setRefresh(!refresh);
+    }).catch((error) => {"fail to update the list of routes"});
+  };
+
+  // Update innfomations displayed when a route is selected
+  const handleSelectMyRoute = (route) => {
+    // set the flag to true
+    isRouteSelected.current = true;
+    // transform the points to a list of points [lat, lng]
+    const transformedPoints = route.route.map(point => {
+      const [lng, lat] = JSON.parse(point);
+      return [lat, lng];
+    });
+    // update the path
+    setReceivedPoints(transformedPoints);
+    // get the starting point and the arrival point
+    const startPoint = transformedPoints[0];
+    const endPoint = transformedPoints[transformedPoints.length - 1];
+    // transform the points to a JSON format
+    const formatedStartPoint = { "lat": startPoint[0], "lng": startPoint[1]};
+    const formatedEndPoint = {"lat": endPoint[0], "lng": endPoint[1]};
+    // update the starting point and the arrival point
+    setStartPoint(formatedStartPoint);
+    setEndPoint(formatedEndPoint);
+    // update the selected route
+    setSelectedRoute(route);
+    isRouteSelected.current = false;
+    setSelectionUpdate(!selectionUpdate);
+    
+  };
 
   return (
     <div>
@@ -210,7 +286,12 @@ export default function TestMapApi() {
       {/** Display the form above the map */}
       <div style={{ position: 'relative', zIndex : 1001 }}>
         {/* Formulaire pour le nom du chemin et la planification */}
-        <CreateRouteForm onSubmit={handleRouteFormSubmit} />
+        <CreateRouteForm 
+          createRoute={handleCreateRoute} 
+          selectedRoute={selectedRoute} 
+          selectionUpdate={selectionUpdate}
+          updateRoute={handleUpdateRoute}
+        />
       </div>
 
       {/** start point selection button */}
@@ -247,8 +328,8 @@ export default function TestMapApi() {
         zoom={17}
         style={{
           border: '1px solid #ccc',
-          height: '900px',
-          width: '900px',
+          height: '700px',
+          width: '700px',
           margin: '10px',
           position: 'relative',
         }}
@@ -347,7 +428,9 @@ export default function TestMapApi() {
         <MapClickHandler />
       </MapContainer>
 
-      <RouteInteraction onSelectChemin={handleSelectedChemin} />
+
+       {/* Intégrez le composant ListRouteForm */}
+       <ListRouteForm refresh={refresh} onSelectRoute={handleSelectMyRoute} deleteRoute={handleDeleteRoute}/>
 
 
       <LogoutButton />

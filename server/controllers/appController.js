@@ -42,7 +42,6 @@ export async function addRoute(req, res) {
 /**
  * PUT: http://localhost:8080/api/updateRoute
  * @param: {
- *   "username": "example123",
  *   "name": "Route1",
  *   "newRoute": ["[updated coordinates]", ...],
  *   "newPlanning": {
@@ -54,17 +53,22 @@ export async function addRoute(req, res) {
 export async function updateRoute(req, res) {
     try {
               
-        const { username, name, newRoute, newPlanning } = req.body;
+        // Get the username from the token
+        const username = req.user.username;
+        // Get the route details from the request body
+        const {name, route, planning } = req.body;
 
-        const route = await RouteModel.findOne({ username, name });
-        if (!route) {
-            return res.status(404).send({ error: "Route not found!" });
+        // verify if the route exist
+        const exitingRoute = await RouteModel.findOne({ username, name });
+
+        if (!exitingRoute) {
+            return res.status(404).send({ error: "Route non trouvée!" });
         }
 
-        route.route = newRoute || route.route;
-        route.planning = newPlanning || route.planning;
+        exitingRoute.route = route;
+        exitingRoute.planning = planning;
 
-        route.save()
+        exitingRoute.save()
             .then(() => res.status(201).send({ msg: "Route updated successfully!" }))
             .catch((error) => res.status(500).send({ error }));
     } catch (error) {
@@ -75,18 +79,20 @@ export async function updateRoute(req, res) {
 /**
  * DELETE: http://localhost:8080/api/deleteRoute
  * @param: {
- *   "username": "example123",
  *   "name": "Route1"
  * }
  */
 export async function deleteRoute(req, res) {
     try {
-              
-        const { username, name } = req.body;
 
+        // Get the username from the token
+        const username = req.user.username;
+        // Get the route details from the request body              
+        const name = req.body.name;
+        // delete the route from the database 
         const route = await RouteModel.findOneAndDelete({ username, name });
         if (!route) {
-            return res.status(404).send({ error: "Route not found!" });
+            return res.status(404).send({ error: "Route non trouvée" });
         }
 
         return res.status(201).send({ msg: "Route deleted successfully!" });
@@ -96,20 +102,20 @@ export async function deleteRoute(req, res) {
 }
 
 /**
- * GET: http://localhost:8080/api/getroutes/example123
+ * GET: http://localhost:8080/api/getroutes
  */
 export async function getRoutes(req, res) {
     try {
-              
-        const { username } = req.params;
 
+        // Get the username from the token
+        const username = req.user.username;
+        // get all the routes for the user
         const routes = await RouteModel.find({ username });
         if (!routes || routes.length === 0) {
             return res.status(404).send({ error: "No routes found for the user!" });
         }
 
-        const routeCoordinates = routes.map((route) => route.route);
-        return res.status(200).send(routeCoordinates);
+        return res.status(200).send(routes);
     } catch (error) {
         return res.status(500).send({ error });
     }
