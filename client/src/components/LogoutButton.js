@@ -11,8 +11,13 @@ export const LogoutButton = () => {
   };
 
   return (
-    <button onClick={userLogout} className=''>
-      Logout
-    </button>
+    <div className="text-center">
+      <span>
+        Come back later?{' '}
+        <button onClick={userLogout} className="btn btn-link">
+          Logout
+        </button>
+      </span>
+    </div>
   );
 };

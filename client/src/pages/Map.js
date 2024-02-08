@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom'
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getShortestPath, updateIndex } from '../helper/mapHelper'
-import { addRouteToServer, updateRoute, deleteRoute } from '../helper/routeHelper';
+import { addRouteToServer, updateRoute, deleteRoute, findMatches} from '../helper/routeHelper';
 
 /** Components */
 import { LogoutButton } from '../components/LogoutButton'
 import { CreateRouteForm } from '../components/CreateRouteForm';
 import ListRouteForm from '../components/ListRouteForm';
+import { MatchList } from '../components/MatchList';
 
 /** Display OpenSteetMap with leaflet module */
 import { MapContainer, TileLayer, useMapEvents, Marker, Popup, Polyline} from 'react-leaflet';
@@ -17,6 +18,8 @@ import 'leaflet/dist/leaflet.css';
 import marker_1 from '../assets/map-marker-icon-1.png';
 import marker_2 from '../assets/map-marker-icon-2.png';
 import marker_dynamic from '../assets/map-marker-icon-dynamic.png';
+import marker_dynamic_2 from '../assets/map-marker-icon-dynamic-2.png';
+
 import { Toast } from 'bootstrap';
 
 
@@ -39,7 +42,7 @@ import { Toast } from 'bootstrap';
  */
 
 
-export default function TestMapApi() {
+export default function Map() {
 
   // ergonomics variable for the first selection
   const firstSelection = useRef(true);
@@ -67,9 +70,16 @@ export default function TestMapApi() {
   const [selectionUpdate, setSelectionUpdate] = useState(false);
   // refresh the list of routes
   const [refresh, setRefresh] = useState(false);
+  
+  //  id of the selected matching route
+  const [macthingRouteSelectedId, setMacthingRouteSelectedId] = useState(0);
+  // matching routes 
+  const [matchingRoutes, setMatchingRoutes] = useState([]);
 
   // Path color
   const blueOptions = { fillColor: 'blue' }
+  const greenOptions = { fillColor: 'red' }
+
 
   
   /** Updates the path */
@@ -176,20 +186,17 @@ export default function TestMapApi() {
   /** ----------------------- EN COURS ----------------------- */
 
   // Format the route for the server
-  function formatRoute(formData) {
-
+  function formatRoute(formData, points) {
     // verify the existence of the route
-    if (!receivedPoints || receivedPoints.length === 0) {
+    if (!points || points.length === 0) {
       toast.error('Veuillez créer un chemin');
       return null;
     }
-
     // transform the points to a JSON format
-    const transformedPoints = receivedPoints.map(point => {
+    const transformedPoints = points.map(point => {
       const [lng, lat] = point;
       return JSON.stringify([lat, lng]);
     });
-
     // Add the path to the form data
     formData.route = transformedPoints;
     return formData;
@@ -214,8 +221,9 @@ export default function TestMapApi() {
 
   // Handle the creation of a route
   const handleCreateRoute = (formData) => {
+
     // format the data for the server
-    const data = formatRoute(formData);
+    const data = formatRoute(formData, receivedPoints);
     if (!data) return;
     // add the route to the server
     const addRoutePromise = addRouteToServer(data);
@@ -234,14 +242,15 @@ export default function TestMapApi() {
 
   // Handle the update of a route
   const handleUpdateRoute = (formData) => {
+
     // format the data for the server
-    const data = formatRoute(formData);
+    const data = formatRoute(formData, receivedPoints);
     // add the route to the server
     const updateRoutePromise = updateRoute(data);
 
     toast.promise(updateRoutePromise, {
       loading: 'Updating route...',
-      success: <b>Route updated</b>,
+      success: <b>Route Mmise à jour</b>,
       error: (err) => <b>{err.response.data.error}</b>,
     });
 
@@ -253,6 +262,8 @@ export default function TestMapApi() {
 
   // Update innfomations displayed when a route is selected
   const handleSelectMyRoute = (route) => {
+    // disable the first selection flag
+    firstSelection.current = false;
     // set the flag to true
     isRouteSelected.current = true;
     // transform the points to a list of points [lat, lng]
@@ -275,7 +286,53 @@ export default function TestMapApi() {
     setSelectedRoute(route);
     isRouteSelected.current = false;
     setSelectionUpdate(!selectionUpdate);
+  };
+
+
+   // Update innfomations displayed when a route is selected
+   const handleSelecMatchingRoute = (id) => {
+    setMacthingRouteSelectedId(id);
+  };
+
+
+  // ----------------------- MatchList.js -----------------------
+
+  // Handle the update of a route
+  const handleFindMatches = (formData) => {
     
+    // format the data for the server
+    const data = formatRoute(formData, receivedPoints);
+    console.log('formData : ', formData);
+
+    if (!data) return;
+    // add the route to the server
+    const findMatchesPromise = findMatches(data);
+
+    toast.promise(findMatchesPromise, {
+      loading: 'Findings routes...',
+      success: <b>Trajets récupérés</b>,
+      error: (err) => <b>{err.response.data.error}</b>,
+    });
+
+    findMatchesPromise.then((formData) => {
+
+      // transform the points to a list of points [lat, lng]
+      const formatedData = formData.map((route, id) => {
+        let points = route.route;
+        const transformedPoints = points.map(point => {
+          const [lng, lat] = JSON.parse(point);
+          return [lat, lng];
+        });
+        let formattedRoute = route;
+        formattedRoute.route = transformedPoints;
+        return formattedRoute;
+      });
+
+
+      setMatchingRoutes(formatedData);
+      // update the list of routes
+      // setRefresh(!refresh);
+    }).catch((error) => {"fail to get matching routes"});
   };
 
   return (
@@ -291,6 +348,7 @@ export default function TestMapApi() {
           selectedRoute={selectedRoute} 
           selectionUpdate={selectionUpdate}
           updateRoute={handleUpdateRoute}
+          handleFindMatches={handleFindMatches}
         />
       </div>
 
@@ -365,6 +423,31 @@ export default function TestMapApi() {
             >
             </Marker>
         )}
+
+
+        {/** Matching routes */
+        matchingRoutes.length > 0 &&
+          matchingRoutes[macthingRouteSelectedId].route.map((point, index) => (
+              (<Marker 
+                key={index}
+                position={point}
+                icon={L.icon({ iconUrl: marker_dynamic_2, iconSize: [20, 20] })}
+              >
+              </Marker>)
+              
+
+        
+            ))       
+        }
+
+        {/** Path */
+         matchingRoutes.length > 0 && (
+          <Polyline color='green' positions={[matchingRoutes[macthingRouteSelectedId].route]} />
+        )}
+
+        
+  
+        
         
 
          {/** Path */
@@ -432,6 +515,12 @@ export default function TestMapApi() {
        {/* Intégrez le composant ListRouteForm */}
        <ListRouteForm refresh={refresh} onSelectRoute={handleSelectMyRoute} deleteRoute={handleDeleteRoute}/>
 
+        {/* Intégrez le composant MatchList */}
+        { true && (
+          <MatchList routes={matchingRoutes} handleFindMatches={handleFindMatches} onSelectMatchingRoute={handleSelecMatchingRoute}/>
+        )}
+
+       
 
       <LogoutButton />
       <Link to="/profile"><button>Profile</button></Link>

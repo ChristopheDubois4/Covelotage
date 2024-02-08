@@ -3,11 +3,13 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import TimePicker from 'rc-time-picker';
 import 'rc-time-picker/assets/index.css';
+import toast from 'react-hot-toast';
+
 
 import { getDayOfWeek } from '../helper/routeHelper';
 
 
-export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, updateRoute}) => {
+export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, updateRoute, handleFindMatches}) => {
   const [routeName, setRouteName] = useState('');
   const [selectedDates, setSelectedDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -72,51 +74,60 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
     setSelectedPeriodicTimes(updatedPeriodicTimes);
   };
 
-  // Submit the form to create a new route
-  const handleCreateRoute = (e) => {
-    e.preventDefault();
+  function getValideRouteInfos() {
     // Verify that the name is filled
     if (!routeName.trim()) {
-      console.error('Veuillez entrer un nom pour le chemin.');
+      toast.error('Veuillez entrer un nom pour le chemin.');
       return;
     }
     // Verify that at least one date OR one periodic time is selected
     if (selectedDates.length === 0 && selectedPeriodicTimes.length === 0) {
-      console.error('Veuillez sélectionner au moins une date ou un horaire périodique.');
+      toast.error('Veuillez sélectionner au moins une date ou un horaire périodique.');
       return;
     }
-    // If the conditions are met, submit the form
-    createRoute({ 
+    // structure the route information
+    const routeInfos = { 
       "name": routeName, 
       "planning": { 
         "dates": selectedDates, 
         "periodic": selectedPeriodicTimes 
       }
-    });
+    }
+    return routeInfos;
+  }
+
+  // Submit the form to create a new route
+  const handleCreateRoute = (e) => {
+    e.preventDefault();
+    // Verify that all the required information is filled
+    const routeInfos = getValideRouteInfos();
+    if (routeInfos) {
+      // If the conditions are met, submit the form
+      createRoute(routeInfos);
+    }
   };
 
    // Submit the form
   const handleUpdateRoute = (e) => {
     e.preventDefault();
-    // Verify that the name is filled
-    if (!routeName.trim()) {
-      console.error('Veuillez entrer un nom pour le chemin.');
-      return;
+    // Verify that all the required information is filled
+    const routeInfos = getValideRouteInfos();
+    if (routeInfos) {
+      // If the conditions are met, submit the form
+      updateRoute(routeInfos);
     }
-    // Verify that at least one date OR one periodic time is selected
-    if (selectedDates.length === 0 && selectedPeriodicTimes.length === 0) {
-      console.error('Veuillez sélectionner au moins une date ou un horaire périodique.');
-      return;
-    }
-    // If the conditions are met, submit the form
-    updateRoute({ 
-      "name": routeName, 
-      "planning": { 
-        "dates": selectedDates, 
-        "periodic": selectedPeriodicTimes 
-      }
-    });
   };
+
+  // find matches for a route button
+  const handleFindMatchesBtn = () => {
+    // Verify that all the required information is filled
+    const routeInfos = getValideRouteInfos();
+    if (routeInfos) {
+      // If the conditions are met, submit the form
+      handleFindMatches(routeInfos);
+    }
+    console.log('handleFindMatchesBtn OK');
+  }
   
   // Formated the selected date
   const formatSelectedDate = (date) => {
@@ -140,19 +151,22 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
     // update the name of the route
     setRouteName(selectedRoute.name);
 
+    let formattedDates = [];
     // if the route has dates, update the selected dates
     if (selectedRoute.planning.dates.length > 0) {
       // format the dates to Date objects
-      const formattedDates = selectedRoute.planning.dates.map(dateString => {
+        formattedDates = selectedRoute.planning.dates.map(dateString => {
         return new Date(dateString);
       });
-      setSelectedDates(formattedDates);
     }
+    setSelectedDates(formattedDates);
 
+    let periodic = selectedRoute.planning.periodic;
     // if the route has periodic times, update the selected periodic times
-    if (selectedRoute.planning.periodic.length > 0) {
-      setSelectedPeriodicTimes(selectedRoute.planning.periodic);
+    if (periodic.length <= 0) {
+      periodic = [];
     }
+    setSelectedPeriodicTimes(periodic);
   }, [selectedRoute, selectionUpdate]);
 
   return (
@@ -173,7 +187,7 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
             onChange={(value) => setSelectedDate(value)}
             showTimeSelect
             timeFormat="HH:mm"
-            timeIntervals={15}
+            timeIntervals={5}
             timeCaption="Time"
             dateFormat="dd/MM/yyyy HH:mm"
             isClearable
@@ -185,7 +199,6 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
         </div>
   
         <div>
-          <label>Dates sélectionnées : </label>
           <ul>
             {selectedDates.map((date, index) => (
               <li key={index}>
@@ -206,13 +219,13 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
               value={selectedDayOfWeek}
               onChange={(e) => setSelectedDayOfWeek(parseInt(e.target.value, 10))}
             >
-              <option value={0}>Lundi</option>
-              <option value={1}>Mardi</option>
-              <option value={2}>Mercredi</option>
-              <option value={3}>Jeudi</option>
-              <option value={4}>Vendredi</option>
-              <option value={5}>Samedi</option>
-              <option value={6}>Dimanche</option>
+              <option value={1}>Lundi</option>
+              <option value={2}>Mardi</option>
+              <option value={3}>Mercredi</option>
+              <option value={4}>Jeudi</option>
+              <option value={5}>Vendredi</option>
+              <option value={6}>Samedi</option>
+              <option value={0}>Dimanche</option>
             </select>
           </div>
           <div>
@@ -240,16 +253,21 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
   
         </div>
   
-  
         <button type="submit">Créer trajet</button>
 
-        {/* Bouton pour mettre à jour le trajet */}
-        {selectedRoute && (
+      </form>
+     
+      <button onClick={handleFindMatchesBtn}>
+        Trouver les correspondances
+      </button>
+
+      {/* Bouton pour mettre à jour le trajet */}
+      {selectedRoute && (
         <button type="button" onClick={handleUpdateRoute}>
           Modifier le trajet
         </button>
       )}
-      </form>
+
     </div>
   );
 };

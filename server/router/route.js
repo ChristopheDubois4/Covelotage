@@ -20,6 +20,8 @@ router.route('/authenticate').post(controller.verifyUser, (req, res) => res.end(
 router.route('/login').post(controller.verifyUser, controller.login); // login in app
 /** POST Methods for Routes */
 router.route('/addroute').post(Auth, appController.addRoute); // add route
+router.route('/findMatches').post(Auth, appController.findMatches); // find matches
+
 
 /** GET Methods for Users */
 router.route('/user/:username').get(controller.getUser); // user with username

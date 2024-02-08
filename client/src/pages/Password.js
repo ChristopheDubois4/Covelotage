@@ -47,40 +47,47 @@ export default function Password() {
 
   return (
 
-    <div className="">
+    <div
+      className="container-fluid d-flex align-items-center justify-content-center vh-100"
+      style={{
+        backgroundImage: `url(${process.env.PUBLIC_URL}/Background.jpg)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: 'white',
+        position: 'relative',
+      }}
+    >
+      <div className="position-absolute top-0 end-0 bottom-0 start-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(5px)' }}></div>
 
-      <Toaster position='' reverseOrder={false}></Toaster>
+      <Toaster position="" reverseOrder={false}></Toaster>
 
-      <div className=''>
-        <div className="">
+      <div className="card p-4" style={{ width: '45%', borderRadius: '15px' }}>
+        <div className="text-center mb-4">
+          <h4 className="mb-0">Hello {apiData?.firstName || apiData?.username}</h4>
+          <span>Explore More by connecting with us.</span>
+        </div>
 
-          <div className="">
-            <h4 className=''>Hello {apiData?.firstName || apiData?.username}</h4>
-            <span className=''>
-              Explore More by connecting with us.
-            </span>
+        <form className="row g-3" onSubmit={formik.handleSubmit}>
+          <div className="col-md-6">
+            <img src={apiData?.profile || avatar} className="img-fluid rounded-circle" alt="avatar" />
           </div>
 
-          <form className='' onSubmit={formik.handleSubmit}>
-              <div className=''>
-                  <img src={apiData?.profile || avatar} className="" alt="avatar" />
-              </div>
+          <div className="col-md-6">
+            <input {...formik.getFieldProps('password')} type="password" className="form-control" placeholder="Password" />
+            <button type="submit" className="btn btn-primary w-100">
+              Sign in
+            </button>
+          </div>
 
-              <div className="">
-                  <input {...formik.getFieldProps('password')} type="password" className="" placeholder='Password' />
-                  <button type='submit' className="">Sign in</button>
-              </div>
-              
-
-              <div className="">
-                <span>Forgot Password? <Link className='' to="/Recovery">Recover Now</Link></span>
-              </div>
-
-          </form>
-
-        </div>
+          <div className="col-12">
+            <span>
+              Forgot Password? <Link className="text-decoration-none" to="/Recovery">
+                Recover Now
+              </Link>
+            </span>
+          </div>
+        </form>
       </div>
-      <div className="background-section"></div>
     </div>
          
 

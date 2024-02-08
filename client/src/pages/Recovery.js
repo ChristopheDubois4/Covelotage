@@ -59,45 +59,62 @@ export default function Recovery() {
 
   return (
 
-    <div className="">
+    <div
+    className="container-fluid d-flex align-items-center justify-content-center vh-100 position-relative"
+    style={{
+      backgroundImage: `url(/Background.jpg)`, // Update the path to your image in the public folder
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}
+  >
+    <Toaster position="top-center" reverseOrder={false}></Toaster>
 
-      <Toaster position='top-center' reverseOrder={false}></Toaster>
+    <div
+      className="position-absolute top-0 end-0 bottom-0 start-0"
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+        backdropFilter: 'blur(5px)', 
+      }}
+    ></div>
 
-      <div className=''>
-        <div className="">
-
-          <div className="">
-            <h4 className=''>Recovery</h4>
-            <span className=''>
-              Enter OTP to recover password.
-            </span>
-          </div>
-
-          <form className='' onSubmit={onSubmit}>
-             
-              <div className="">
-
-                  <div className="">
-                    <span className=''>
-                      Enter 6 digits OTP sent to your emial address.
-                    </span>
-                    <input onChange={(e) => setOTP(e.target.value)} type="pascsword" className="" placeholder='OTP' />
-                  </div>
-
-                  <button type='submit' className="">Recover</button>
-
-              </div>
-              
-          </form>
-
-            <div className="">
-              <span>Can't get OPT? <button onClick={resendOTP} className=''>Resent</button></span>
-            </div>
-
-        </div>
+    <div
+      className="rounded p-4"
+      style={{
+        width: '40%',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        boxShadow: '0px 0px 15px 0px rgba(0,0,0,0.1)',
+        position: 'relative',
+        zIndex: 1, // Ensure the card is above the blurred background
+      }}
+    >
+      <div className="text-center">
+        <h4 className="mb-0">Recovery</h4>
+        <span>Enter OTP to recover password.</span>
       </div>
-      <div className="background-section"></div>
+
+      <form onSubmit={onSubmit} className="mt-4">
+        <div className="mb-3">
+          <span>Enter 6 digits OTP sent to your email address.</span>
+          <input
+            onChange={(e) => setOTP(e.target.value)}
+            type="password"
+            className="form-control"
+            placeholder="OTP"
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary w-100">
+          Recover
+        </button>
+      </form>
+
+      <div className="text-center mt-3">
+        <span>
+          Can't get OTP? <button onClick={resendOTP} className="btn btn-link">Resend</button>
+        </span>
+      </div>
     </div>
+  </div>
          
 
   )

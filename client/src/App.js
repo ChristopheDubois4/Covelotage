@@ -13,6 +13,7 @@ import Map from './pages/Map';
 import PageNotFound from './pages/PageNotFound';
 import Home from './pages/Home';
 
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 /** auth middleware */
 import { AuthorizeUser, ProtectRoute } from './middleware/auth';

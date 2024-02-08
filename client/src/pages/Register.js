@@ -55,48 +55,53 @@ export default function Register() {
 
   return (
 
-    <div className="">
+    <div
+    className="container-fluid d-flex align-items-center justify-content-center vh-100"
+    style={{
+      backgroundImage: `url(${process.env.PUBLIC_URL}/Background.jpg)`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      color: 'white',
+      position: 'relative',
+    }}
+  >
+    <div className="position-absolute top-0 end-0 bottom-0 start-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)' }}></div>
 
-      <Toaster position='top-center' reverseOrder={false}></Toaster>
+    <Toaster position="top-center" reverseOrder={false}></Toaster>
 
-      <div className=''>
-        <div className="" style={{width : "45%"}}>
-
-          <div className="">
-            <h4 className=''>Register</h4>
-            <span className=''>
-              Happy to join you!
-            </span>
-          </div>
-
-          <form className='' onSubmit={formik.handleSubmit}>
-              <div className=''>
-                  <label htmlFor="profile">
-                    <img src={file || avatar} className="" alt="avatar" />
-                  </label>
-
-                  <input onChange={onUpload} type="file" id='profile' name='profile'/>
-              </div>
-
-              <div className="">
-                  <input {...formik.getFieldProps('email')} type="text" className="" placeholder='Email*' />
-                  <input {...formik.getFieldProps('username')} type="text" className="" placeholder='Username*' />
-                  <input {...formik.getFieldProps('password')} type="text" className="" placeholder='Password*' />
-                 
-                  <button type='submit' className="">Register</button>
-              </div>
-              
-
-              <div className="">
-                <span>Already register? <Link className="" to="/">Login now</Link></span>
-              </div>
-
-          </form>
-
-        </div>
+    <div className="card p-4" style={{ width: '45%', borderRadius: '15px' }}>
+      <div className="text-center mb-4">
+        <h4 className="mb-0">Register</h4>
+        <span>Happy to join you!</span>
       </div>
-      <div className="background-section"></div>
+
+      <form className="row g-3" onSubmit={formik.handleSubmit}>
+        <div className="col-md-6">
+          <label htmlFor="profile" className="form-label">
+            <img src={file || avatar} className="img-fluid rounded-circle" alt="avatar" />
+          </label>
+          <input onChange={onUpload} type="file" id="profile" name="profile" className="form-control" />
+        </div>
+
+        <div className="col-md-6">
+          <input {...formik.getFieldProps('email')} type="text" className="form-control" placeholder="Email*" />
+          <input {...formik.getFieldProps('username')} type="text" className="form-control" placeholder="Username*" />
+          <input {...formik.getFieldProps('password')} type="password" className="form-control" placeholder="Password*" />
+          <button type="submit" className="btn btn-primary w-100">
+            Register
+          </button>
+        </div>
+
+        <div className="col-12">
+          <span>
+            Already registered? <Link className="text-decoration-none" to="/">
+              Login now
+            </Link>
+          </span>
+        </div>
+      </form>
     </div>
+  </div>
          
 
   )

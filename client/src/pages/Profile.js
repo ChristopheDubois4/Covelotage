@@ -58,58 +58,85 @@ export default function Profile() {
   }
 
   return (
-    <div className="">
 
-      <Toaster position='top-center' reverseOrder={false}></Toaster>
+    <div
+      className="container-fluid d-flex align-items-center justify-content-center vh-100"
+      style={{
+        backgroundImage: `url('Background.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative',
+      }}
+    >
+      <Toaster position="top-center" reverseOrder={false}></Toaster>
 
-      <span> Return to the  <Link to="/map"><button>map</button></Link> </span>
+      <div
+        className="rounded p-4"
+        style={{
+          width: '40%',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          boxShadow: '0px 0px 15px 0px rgba(0,0,0,0.1)',
+          position: 'relative',
+          zIndex: '1',
+        }}
+      >
+        <div className="text-center mb-4">
+        <span> Return to the  <Link to="/map"><button>map</button></Link> </span>
 
-      <div className=''>
-        <div className="" style={{ width: "45%", paddingTop: '3em'}}>
+          <h4 className="mb-0">Profile</h4>
+          <span>You can update the details.</span>
+        </div>
 
-          <div className="">
-            <h4 className=''>Profile</h4>
-            <span className=''>
-                You can update the details.
-            </span>
+        <form onSubmit={formik.handleSubmit}>
+          <div className="mb-3 text-center">
+            <label htmlFor="profile">
+              <img src={file || apiData?.profile || avatar} className="img-fluid rounded-circle" alt="avatar" style={{ maxWidth: '120px' }} />
+            </label>
+
+            <input onChange={onUpload} type="file" id="profile" name="profile" style={{ display: 'none' }} />
           </div>
 
-          <form className='' onSubmit={formik.handleSubmit}>
-              <div className=''>
-                  <label htmlFor="">
-                    <img src={file || apiData?.profile || avatar} className="" alt="avatar" />
-                  </label>
-                  
-                  <input onChange={onUpload} type="file" id='profile' name='profile' />
-              </div>
+          <div className="mb-3">
+            <input {...formik.getFieldProps('firstName')} className="form-control" type="text" placeholder="First Name" />
+          </div>
+          <div className="mb-3">
+            <input {...formik.getFieldProps('lastName')} className="form-control" type="text" placeholder="Last Name" />
+          </div>
+          <div className="mb-3">
+            <input {...formik.getFieldProps('mobile')} className="form-control" type="text" placeholder="Mobile No." />
+          </div>
+          <div className="mb-3">
+            <input {...formik.getFieldProps('email')} className="form-control" type="text" placeholder="Email" />
+          </div>
+          <div className="mb-3">
+            <input {...formik.getFieldProps('address')} className="form-control" type="text" placeholder="Address" />
+          </div>
 
-              <div className="">
-                <div className="">
-                  <input {...formik.getFieldProps('firstName')} className="" type="text" placeholder='FirstName' />
-                  <input {...formik.getFieldProps('lastName')} className="" type="text" placeholder='LastName' />
-                </div>
+          <div className="mb-3 text-center">
+            <button className="btn btn-primary w-100" type="submit">
+              Update
+            </button>
+          </div>
 
-                <div className="">
-                  <input {...formik.getFieldProps('mobile')} className="" type="text" placeholder='Mobile No.' />
-                  <input {...formik.getFieldProps('email')} className="" type="text" placeholder='Email*' />
-                </div>
+          <LogoutButton />
 
-               
-                  <input {...formik.getFieldProps('address')} className="" type="text" placeholder='Address' />
-                  <button className="" type='submit'>Update</button>
-               
-                  
-              </div>
-
-              <div className="">
-                <span className=''>come back later? <LogoutButton /> </span>
-              </div>
-
-          </form>
-
-        </div>
+        </form>
       </div>
-      <div className="background-section"></div>
+
+      {/* The following div creates the blurred overlay */}
+      <div
+        className="position-absolute top-0 end-0 bottom-0 start-0"
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(5px)',
+        }}
+      ></div>
+
+
+
     </div>
+  
+
+          
   )
 }

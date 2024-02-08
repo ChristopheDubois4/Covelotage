@@ -7,6 +7,11 @@ import openrouteservice as ors
 
 app = FastAPI()
 
+API=open("OpenRouteService.txt","r")
+APIKey=API.read()
+client=ors.Client(key=APIKey)
+route={}
+
 class Points(BaseModel):
     """
     Pydantic model to represent a list of points.
@@ -40,10 +45,7 @@ async def calculate_shortest_path(request : Points) -> dict[str, list[str]]:
                
         coords = request.points
         
-        API=open("OpenRouteService.txt","r")
-        APIKey=API.read()
-        client=ors.Client(key=APIKey)
-        route={}
+  
         
         route = client.directions(
             coordinates=coords,

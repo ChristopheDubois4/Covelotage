@@ -70,9 +70,24 @@ export async function deleteRoute(routeName) {
     }
 }
 
+// function to find matches for a route
+export async function findMatches(routeData) {
+    try {
+        // get the token from the local storage
+        const token = await localStorage.getItem('token');
+
+        // send the route data to the server to find matches
+        const response = await axios.post('/api/findMatches', routeData, { headers : { "Authorization" : `Bearer ${token}`}});
+        return Promise.resolve(response.data);
+        // return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
 // Récupérer le jour de la semaine
 export const getDayOfWeek = (dayOfWeek) => {
-    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     return days[dayOfWeek];
 };
 
