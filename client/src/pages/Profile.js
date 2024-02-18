@@ -54,7 +54,7 @@ export default function Profile() {
     return <h1>isLoading</h1>
   };
   if (serverError) {
-    return <h1 className="">{serverError}</h1>
+    return <h1>{serverError}</h1>
   }
 
   return (

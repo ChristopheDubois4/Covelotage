@@ -391,7 +391,6 @@ export default function Map() {
           margin: '10px',
           position: 'relative',
         }}
-        onClick={handleMapClick}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

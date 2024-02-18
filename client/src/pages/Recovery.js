@@ -11,23 +11,17 @@ export default function Recovery() {
   const [OTP, setOTP] = useState();
   const navigate = useNavigate();
 
-  const isMounted = useRef(true);
-
   /** 
    * Skip the initial render and then every time the value of username changes, 
    * the code inside useEffect will be re-executed. 
    */
   useEffect(() => {
     // Skip the initial render
-    if (!isMounted.current) {
-      generateOTP(username).then((status) => {
-        if (status === 200) return toast.success('OTP has been sent to your email!');
-        return toast.error('Problem while generating OTP!');
-      }).catch(error => { console.log(error)});
-    } else {
-      // Set isMounted to false after the initial render
-      isMounted.current = false;
-    }
+    generateOTP(username).then((status) => {
+      if (status === 200) return toast.success('OTP has been sent to your email!');
+      return toast.error('Problem while generating OTP!');
+    }).catch(error => { console.log(error)});
+    
   }, [username]);
 
   async function onSubmit(e){

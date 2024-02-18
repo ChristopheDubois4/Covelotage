@@ -52,11 +52,12 @@ export async function profileValidate(values) {
 /** Validate reset password */
 function resetPasswordVerify(errors = {}, values) {
 
-    const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
-
     if(values.password !== values.confirm_pwd){
         errors.password = toast.error('Password not match...!');
     }
+    // if (passwordVerify({}, values).password) {
+    //     errors.password = passwordVerify({}, values).password;
+    // }
 
     return errors;
 }

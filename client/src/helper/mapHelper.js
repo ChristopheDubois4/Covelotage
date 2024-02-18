@@ -14,9 +14,15 @@ export async function getShortestPath(userPoints) {
         // formate the points
         const formatedPoints = userPoints.map(point => JSON.stringify([point.lng, point.lat]));
         // send the points to the server
-        const { data : { points }} =  await axios.post(`/api/shortestPath`, { points : formatedPoints })
+        // const { data : { points }} =  await axios.post(`/api/shortestPath`, { points : formatedPoints })
+
+        const r =  await axios.post(`/api/shortestPath`, { points : formatedPoints })
+        const { data : { data }} = r;
+
+        console.log('\n\n r', r);
+
         // transform the points to a list of points [lat, lng]
-        const transformedPoints = points.map(point => {
+        const transformedPoints = data.map(point => {
             const [lng, lat] = JSON.parse(point);
             return [lat, lng];
         });

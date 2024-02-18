@@ -8,24 +8,22 @@ const router = Router();
 
 /** import all controllers */
 import * as controller from '../controllers/userController.js'
-import * as mapController from '../controllers/mapApiController.js'
+import * as mapController from '../controllers/mapController.js'
 import * as appController from '../controllers/appController.js';
 import Auth, {localVariables} from '../middleware/auth.js';
-import {registerMail} from '../controllers/mailer.js'
 
 /** POST Methods for Users*/
 router.route('/register').post(controller.register); // register user
-router.route('/registerMail').post(registerMail); // send the email
 router.route('/authenticate').post(controller.verifyUser, (req, res) => res.end()); // authenticate user
 router.route('/login').post(controller.verifyUser, controller.login); // login in app
+router.route('/generateOTP').post(controller.verifyUser, localVariables, controller.generateOTP); // generate random OTP
 /** POST Methods for Routes */
 router.route('/addroute').post(Auth, appController.addRoute); // add route
-router.route('/findMatches').post(Auth, appController.findMatches); // find matches
+router.route('/findMatches').post(Auth, mapController.findMatches); // find matches
 
 
 /** GET Methods for Users */
 router.route('/user/:username').get(controller.getUser); // user with username
-router.route('/generateOTP').get(controller.verifyUser, localVariables, controller.generateOTP); // generate random OTP
 router.route('/verifyOTP').get(controller.verifyUser, controller.verifyOTP); // verify generated OTP
 router.route('/createResetSession').get(controller.createResetSession); // reset all the variables
 /** GET Methods for Routes */

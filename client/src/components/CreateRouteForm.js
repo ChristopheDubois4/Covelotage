@@ -17,6 +17,8 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
   const [selectedPeriodicTimes, setSelectedPeriodicTimes] = useState([]);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState(0);
   const [selectedTime, setSelectedTime] = useState(null);
+  
+  const periodicDateRef = new Date(1970, 0, 1);
 
   // Check if the hour is valid
   const isValidHour = (date) => {
@@ -48,20 +50,14 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
       console.error('Heure invalide ou jour non sélectionné');
       return;
     }
-    // Create a new object for the periodic time
-    const selectedDateTime = new Date(selectedDate);
+    // Create a new date object with a fixed date (1st January 1970) 
+    const selectedDateTime = periodicDateRef;
     // set the time to the selected time 
     selectedDateTime.setHours(selectedTime.hours(), selectedTime.minutes(), 0);
-    // format the time to 24h format 
-    const formattedTime = selectedDateTime.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: false
-    });
     // assenble the day of the week and the time
     const newPeriodicTime = {
       dayOfWeek: selectedDayOfWeek,
-      time: formattedTime,
+      time: selectedDateTime,
     };
     // update the selectedPeriodicTimes array
     setSelectedPeriodicTimes([...selectedPeriodicTimes, newPeriodicTime]);
@@ -93,6 +89,7 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
         "periodic": selectedPeriodicTimes 
       }
     }
+    console.log('routeInfos', routeInfos);
     return routeInfos;
   }
 
@@ -137,7 +134,7 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit',
+      minute: '2-digit',periodicDateRef
     }).format(date);
 
     return formattedDate;
@@ -147,26 +144,12 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
   useEffect(() => {
     // if no route is selected, return
     if (!selectedRoute) return;
-
     // update the name of the route
     setRouteName(selectedRoute.name);
-
-    let formattedDates = [];
-    // if the route has dates, update the selected dates
-    if (selectedRoute.planning.dates.length > 0) {
-      // format the dates to Date objects
-        formattedDates = selectedRoute.planning.dates.map(dateString => {
-        return new Date(dateString);
-      });
-    }
-    setSelectedDates(formattedDates);
-
-    let periodic = selectedRoute.planning.periodic;
-    // if the route has periodic times, update the selected periodic times
-    if (periodic.length <= 0) {
-      periodic = [];
-    }
-    setSelectedPeriodicTimes(periodic);
+    // update the selected dates
+    setSelectedDates(selectedRoute.planning.dates);
+    // update the selected periodic times
+    setSelectedPeriodicTimes(selectedRoute.planning.periodic);
   }, [selectedRoute, selectionUpdate]);
 
   return (
@@ -243,7 +226,15 @@ export const CreateRouteForm = ({ createRoute, selectedRoute, selectionUpdate, u
           <ul>
             {selectedPeriodicTimes.map((periodicTime, index) => (
               <li key={index}>
-                {`${getDayOfWeek(periodicTime.dayOfWeek)} ${periodicTime.time}`}
+                {console.log("Type de periodicTime.time :", typeof periodicTime.time)}
+                {`
+                  ${getDayOfWeek(periodicTime.dayOfWeek)} 
+                  ${periodicTime.time.toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit', 
+                      hour12: false
+                    })}
+                `}
                 <button type="button" onClick={() => handleRemovePeriodicTime(index)}>
                   -
                 </button>

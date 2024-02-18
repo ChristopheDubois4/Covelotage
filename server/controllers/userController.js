@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken'
 import ENV from '../config.js'
 // One time password
 import otpGenerator from 'otp-generator';
+// Mailer function to send the email 
+import { sendMail } from './mailer.js';
 
 
 /** middleware for verify user */
@@ -71,17 +73,31 @@ export async function register(req, res) {
                 }
                 bcrypt.hash(password, 10)
                     .then( hashedPassword => {
-        
+                        // create new user 
                         const user = new UserModel({
                             username,
                             password : hashedPassword,
                             profile : profile || '',
                             email
                         });
-        
-                        // return save result as a response
+                        // save the user in the database
                         user.save()
-                            .then(result => res.status(201).send({ msg : "User register Successfully"}))
+                            .then(async result => {
+                                // Create the email message to confirm the registration
+                                const message = {
+                                    body: {
+                                        name: username,
+                                        intro: 'Welcome to our service!',
+                                        outro: 'Need help, or have questions? Placeholder'
+                                    }
+                                }
+                                // Create the email subject
+                                const subject = "Signup Successful";
+                                // Send the email to the user
+                                await sendMail(email, subject, message)
+                                // Send the response to the client with a success message
+                                res.status(201).send({ msg : "User register Successfully"});
+                            })
                             .catch(error => res.status(500).send({error}))
         
                     }).catch(error => {
@@ -102,6 +118,65 @@ export async function register(req, res) {
     }
 }
 
+
+export async function register33(req, res) {
+    try {
+        const { username, password, profile, email } = req.body;
+
+        // Vérifiez si l'utilisateur et l'e-mail existent déjà
+        const existUsername = await UserModel.findOne({ username });
+        if (existUsername) {
+            return res.status(400).json({ error: "AlreadyExisting", msg: "Username already exists" });
+        }
+
+        const existEmail = await UserModel.findOne({ email });
+        if (existEmail) {
+            return res.status(400).json({ error: "AlreadyExisting", msg: "Email already exists" });
+        }
+
+        // Vérifiez si le mot de passe est présent
+        if (!password) {
+            return res.status(400).json({ error: "NoPassword", msg: "Password is required" });
+        }
+
+        // Hachage du mot de passe
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Créer un nouvel utilisateur
+        const newUser = new UserModel({
+            username,
+            password: hashedPassword,
+            profile: profile || '',
+            email
+        });
+
+        // Enregistrez le nouvel utilisateur dans la base de données
+        const savedUser = await newUser.save();
+
+        // Créez et envoyez l'e-mail de bienvenue
+        const emailContent = {
+            from: ENV.EMAIL,
+            to: email,
+            subject: "Signup Successful",
+            html: MailGenerator.generate({
+                body: {
+                    name: username,
+                    intro: 'Welcome to our service!',
+                    outro: 'Need help, or have questions? Placeholder'
+                }
+            })
+        };
+
+        // Envoi de l'e-mail
+        await sendMail(emailContent);
+
+        // Réponse au client
+        return res.status(201).json({ msg: "User registered successfully" });
+    } catch (error) {
+        return res.status(500).json({ error: error });
+    }
+}
+
 /** POST: http://localhost:8080/api/login 
  * @param: {
   "username" : "example123",
@@ -110,7 +185,6 @@ export async function register(req, res) {
 */
 export async function login(req, res) {
 
-    
     const { username, password} = req.body;
 
     if(!password) {
@@ -223,13 +297,51 @@ export async function updateUser(req, res) {
     }
 }
 
-/** GET: http://localhost:8080/api/generateOTP */
+/** POST: http://localhost:8080/api/generateOTP 
+ * @param: {
+  "username" : "example123"
+}
+*/
 export async function generateOTP(req, res) {
-    // generate an OTP only with numbers
+
     try {
-        req.app.locals.OTP = await otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false})
-        console.log("OTP : ", req.app.locals.OTP )
-        res.status(201).send({})
+        /** MANAGE THE OPT */
+        var otp = null;
+        // generate an OTP only with numbers
+        otp = await otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false});
+        // store the OTP in the app.locals
+        req.app.locals.OTP = otp;
+
+        /** SEND AN EMAIL */
+        // get the username from the request
+        const { username } = req.body;
+        // If the username is not set, return an error
+        if(!username) return res.status(501).send({ error: "Invalid Username"});
+        // Find the user with the username for the email
+        UserModel.findOne({ username })
+            .then( async user => {
+                // If the user is not found, return an error
+                if(!user) return res.status(501).send({ error : "Couldn't Find the User"}); 
+                // get the email from the user
+                const { email } = Object.assign({}, user.toJSON());
+                // Create the email message with the OTP
+                const message = {
+                    body : {
+                        name: username,
+                        intro : `Your Password Recovery OTP is ${otp}. Verify and recover your password.`,
+                        outro: 'Need help, or have questions? Placeholder'
+                    }
+                }
+                // Create the email subject
+                const subject = "Password Recovery OTP";
+                // Send the email with the OTP
+                await sendMail(email, subject, message);
+                // Send the response to the client with a success message
+                res.status(201).send({})
+            })
+            .catch(err => {
+                return res.status(500).send({ error : err});
+            });
     } catch (error) {
         return res.status(500).send({ error });
     }
@@ -238,10 +350,12 @@ export async function generateOTP(req, res) {
 /** GET: http://localhost:8080/api/verifyOTP */
 export async function verifyOTP(req, res) {
     const { code } = req.query;
-  
+    // check the OTP is valid or not
     if(parseInt(req.app.locals.OTP) === parseInt(code)){
-        req.app.locals.OTP = null; // reset the OTP value
-        req.app.locals.resetSession = true; // start session for reset password
+        // reset the OTP value
+        req.app.locals.OTP = null;
+        // start session for reset password
+        req.app.locals.resetSession = true;
         return res.status(201).send({ msg: 'Verify Successsfully!'})
     }
     return res.status(400).send({ error: "Invalid OTP"});

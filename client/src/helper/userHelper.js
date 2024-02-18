@@ -41,19 +41,13 @@ export async function registerUser(credentials){
 
     try {
         const { data : { msg, error }, status } = await axios.post(`/api/register`, credentials);
-        let { username, email } = credentials;
-
         // If the username or the email are already registered
         if (status !== 201) {
             return Promise.reject({ error  :'Fail to request the register mail'})
         }      
-
         if (error) {
             return Promise.reject({ error  : error, msg : msg})
         }
-        
-        /** send email */
-        await axios.post('/api/registerMail', { username, userEmail : email, text : msg})
         return Promise.resolve()
 
     } catch (error) {
@@ -86,18 +80,13 @@ export async function updateUser(response){
     }
 }
 
+
+
 /** generate OTP */
 export async function generateOTP(username){
     try {
-
-        const { status } = await axios.get('/api/generateOTP', { params : { username }});
-
-        // send mail with the OTP
+        const { status } = await axios.post('/api/generateOTP', { username });
         if(status === 201){
-
-            let { data : { email }} = await getUser({ username });
-
-            const { status } = await axios.post('/api/registerMail', { username, userEmail: email, subject : "Password Recovery OTP"})
             return Promise.resolve(status);
         }
         return Promise.reject({ error : 'Problem while generating OTP!' });
@@ -105,6 +94,8 @@ export async function generateOTP(username){
         return Promise.reject({ error });
     }
 }
+
+
 
 /** verify OTP */
 export async function verifyOTP({ username, code }){

@@ -38,7 +38,7 @@ export const RouteSchema = new mongoose.Schema({
                     },
                     // Time in HH:mm format
                     time: {
-                        type: String,
+                        type: Date,
                         required: true
                     }
                 }

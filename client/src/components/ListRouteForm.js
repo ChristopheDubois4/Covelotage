@@ -15,7 +15,23 @@ const ListRouteForm = ({ refresh, onSelectRoute, deleteRoute}) => {
     const fetchRoutes = async () => {
       try {
         const userRoutes = await getAllRoutes();
-        setRoutes(userRoutes);
+        // format the periodic times into date objects
+        const routes = userRoutes.map((route) => {
+          return {
+            ...route,
+            planning: {
+              ...route.planning,
+              periodic: route.planning.periodic.map((periodic) => {
+                return {
+                  ...periodic,
+                  time: new Date(periodic.time)
+                }
+              }),
+              dates: route.planning.dates.map((date) => new Date(date))
+            }
+          };
+        });
+        setRoutes(routes);
       } catch (error) {
         console.error('Erreur lors du chargement des routes :', error);
       }
@@ -51,7 +67,14 @@ const ListRouteForm = ({ refresh, onSelectRoute, deleteRoute}) => {
 
               <ul> Horaires hebdomadaires :
                 {route.planning.periodic.map((periodic, index) => (
-                  <li key={index}>{getDayOfWeek(periodic.dayOfWeek)} {periodic.time}</li>
+                  <li key={index}>
+                    {getDayOfWeek(periodic.dayOfWeek)+" "} 
+                    {periodic.time.toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit', 
+                      hour12: false
+                    })}
+                  </li>
                 ))}
               </ul>
                {/* Bouton de suppression */}
