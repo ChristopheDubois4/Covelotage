@@ -119,64 +119,6 @@ export async function register(req, res) {
 }
 
 
-export async function register33(req, res) {
-    try {
-        const { username, password, profile, email } = req.body;
-
-        // Vérifiez si l'utilisateur et l'e-mail existent déjà
-        const existUsername = await UserModel.findOne({ username });
-        if (existUsername) {
-            return res.status(400).json({ error: "AlreadyExisting", msg: "Username already exists" });
-        }
-
-        const existEmail = await UserModel.findOne({ email });
-        if (existEmail) {
-            return res.status(400).json({ error: "AlreadyExisting", msg: "Email already exists" });
-        }
-
-        // Vérifiez si le mot de passe est présent
-        if (!password) {
-            return res.status(400).json({ error: "NoPassword", msg: "Password is required" });
-        }
-
-        // Hachage du mot de passe
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Créer un nouvel utilisateur
-        const newUser = new UserModel({
-            username,
-            password: hashedPassword,
-            profile: profile || '',
-            email
-        });
-
-        // Enregistrez le nouvel utilisateur dans la base de données
-        const savedUser = await newUser.save();
-
-        // Créez et envoyez l'e-mail de bienvenue
-        const emailContent = {
-            from: ENV.EMAIL,
-            to: email,
-            subject: "Signup Successful",
-            html: MailGenerator.generate({
-                body: {
-                    name: username,
-                    intro: 'Welcome to our service!',
-                    outro: 'Need help, or have questions? Placeholder'
-                }
-            })
-        };
-
-        // Envoi de l'e-mail
-        await sendMail(emailContent);
-
-        // Réponse au client
-        return res.status(201).json({ msg: "User registered successfully" });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-}
-
 /** POST: http://localhost:8080/api/login 
  * @param: {
   "username" : "example123",
